@@ -15,6 +15,7 @@
       self.nixosModules.base
       self.nixosModules.general
       self.nixosModules.desktop
+      self.nixosModules.tailscale
     ];
 
     boot.loader.systemd-boot.enable = true;
