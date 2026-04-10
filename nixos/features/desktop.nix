@@ -1,6 +1,6 @@
 {self, ...}: {
   flake.nixosModules.desktop = {pkgs, ...}: let
-    selfpkgs = self.packages."${pkgs.system}";
+    selfpkgs = self.packages."${pkgs.stdenv.hostPlatform.system}";
   in {
     imports = [
       self.nixosModules.gtk
@@ -60,9 +60,9 @@
       bluetooth.enable = true;
       bluetooth.powerOnBoot = true;
 
-      opengl = {
+      graphics = {
         enable = true;
-        driSupport32Bit = true;
+        enable32Bit = true;
       };
     };
   };

@@ -14,7 +14,7 @@
       isNormalUser = true;
       description = "${config.preferences.user.name}'s account";
       extraGroups = ["wheel" "networkmanager"];
-      shell = self.packages.${pkgs.system}.environment;
+      shell = self.packages.${pkgs.stdenv.hostPlatform.system}.environment;
 
       initialPassword = "12345"; # todo use https://github.com/Mic92/sops-nix?tab=readme-ov-file#setting-a-users-password
     };

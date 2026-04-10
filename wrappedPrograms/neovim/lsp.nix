@@ -138,7 +138,7 @@
   };
 
   flake.modules.neovim.vjxl = {pkgs, ...}: let
-    selfpkgs = self.packages."${pkgs.system}";
+    selfpkgs = self.packages."${pkgs.stdenv.hostPlatform.system}";
   in {
     extraPackages = [
       selfpkgs.vjxl-format
