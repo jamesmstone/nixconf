@@ -16,8 +16,7 @@
       extraGroups = ["wheel" "networkmanager"];
       shell = self.packages.${pkgs.system}.environment;
 
-      hashedPasswordFile = "/persist/passwd";
-      initialPassword = "12345";
+      initialPassword = "12345"; # todo use https://github.com/Mic92/sops-nix?tab=readme-ov-file#setting-a-users-password
     };
 
     persistance.data.directories = [
