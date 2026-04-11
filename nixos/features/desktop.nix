@@ -1,6 +1,8 @@
 {self, ...}: {
   flake.nixosModules.desktop = {pkgs, ...}: let
     selfpkgs = self.packages."${pkgs.stdenv.hostPlatform.system}";
+    user = config.preferences.user.name;
+    timezone = config.preferences.user.timezone;
   in {
     imports = [
       self.nixosModules.gtk
