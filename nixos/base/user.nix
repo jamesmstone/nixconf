@@ -6,6 +6,11 @@
         default = "james";
       };
 
+      user.timezone = lib.mkOption {
+        type = lib.types.str;
+        default = "Europe/Copenhagen";
+      };
+
       user.authorizedKeys = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [

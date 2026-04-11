@@ -36,7 +36,7 @@
       monospace = ["JetBrainsMono Nerd Font"];
     };
 
-    time.timeZone = "Europe/Kyiv";
+    time.timeZone = timezone;
     i18n.defaultLocale = "en_US.UTF-8";
     i18n.extraLocaleSettings = {
       LC_ADDRESS = "uk_UA.UTF-8";
