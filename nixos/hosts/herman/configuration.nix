@@ -16,6 +16,7 @@
       self.nixosModules.general
       self.nixosModules.desktop
       self.nixosModules.tailscale
+      self.nixosModules.openssh
     ];
 
     boot.loader.systemd-boot.enable = true;

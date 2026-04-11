@@ -4,7 +4,6 @@
       enable = true;
       package = pkgs.tailscale;
       # authKeyFile = ""; # todo sops
-      extraUpFlags = ["--ssh"];
     };
   };
 }
