@@ -1,5 +1,9 @@
 {inputs, ...}: {
-  flake.nixosModules.nix = {pkgs, ...}: {
+  flake.nixosModules.nix = {
+    pkgs,
+    lib,
+    ...
+  }: {
     imports = [
       inputs.nix-index-database.nixosModules.nix-index
     ];
@@ -17,7 +21,7 @@
 
     nix.settings.experimental-features = ["nix-command" "flakes"];
     programs.nix-ld.enable = true;
-    nixpkgs.config.allowUnfree = true;
+    nixpkgs.config = lib.mkDefault {allowUnfree = true;};
 
     environment.systemPackages = with pkgs; [
       # Nix tooling
