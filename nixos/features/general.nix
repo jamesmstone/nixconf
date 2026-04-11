@@ -8,6 +8,8 @@
       self.nixosModules.extra_hjem
       self.nixosModules.gtk
       self.nixosModules.nix
+      self.nixosModules.tailscale
+      self.nixosModules.openssh
     ];
 
     users.users.${config.preferences.user.name} = {
