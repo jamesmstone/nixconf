@@ -18,9 +18,6 @@
       self.nixosModules.impermanence
 
       self.nixosModules.discord
-      self.nixosModules.gimp
-      self.nixosModules.youtube-music
-      self.nixosModules.telegram
 
       self.nixosModules.gaming
       self.nixosModules.powersave
