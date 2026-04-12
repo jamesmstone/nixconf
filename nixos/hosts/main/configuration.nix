@@ -17,9 +17,6 @@
 
       self.nixosModules.impermanence
 
-      self.nixosModules.discord
-
-      self.nixosModules.gaming
       self.nixosModules.powersave
 
       # disko

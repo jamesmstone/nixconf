@@ -16,10 +16,6 @@
       self.nixosModules.general
       self.nixosModules.desktop
 
-      self.nixosModules.discord
-
-      self.nixosModules.gaming
-
       self.nixosModules.powersave
     ];
 
