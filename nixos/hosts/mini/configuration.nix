@@ -17,7 +17,6 @@
       self.nixosModules.desktop
 
       self.nixosModules.discord
-      self.nixosModules.gimp
       self.nixosModules.telegram
       self.nixosModules.youtube-music
 
