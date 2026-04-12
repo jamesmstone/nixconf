@@ -23,7 +23,6 @@
       self.nixosModules.youtube-music
 
       self.nixosModules.gaming
-      self.nixosModules.vr
       self.nixosModules.powersave
 
       # disko
