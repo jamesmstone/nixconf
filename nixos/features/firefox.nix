@@ -7,28 +7,24 @@
   }: let
     user = config.preferences.user.name;
 
-    bookmarksToHtml = items: let
-      e = lib.strings.escapeXML;
-      itemToHtml = item:
-        if item ? bookmarks
-        then ''
-          <DT><H3${lib.optionalString (item.toolbar or false) " PERSONAL_TOOLBAR_FOLDER=\"true\""}>${e item.name}</H3>
-          <DL><p>
-          ${lib.concatMapStrings itemToHtml item.bookmarks}</DL><p>
-        ''
-        else "<DT><A HREF=\"${e item.url}\">${e item.name}</A>\n";
-    in ''
-      <!DOCTYPE NETSCAPE-Bookmark-file-1>
-      <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
-      <TITLE>Bookmarks</TITLE>
-      <H1>Bookmarks Menu</H1>
-      <DL><p>
-      ${lib.concatMapStrings itemToHtml items}</DL><p>
-    '';
-
-    bookmarksHtml =
-      pkgs.writeText "firefox-bookmarks.html"
-      (bookmarksToHtml (import ./_bookmarks.nix));
+    # Convert _bookmarks.nix toolbar items to Firefox ManagedBookmarks policy entries.
+    # Nested folders are preserved. javascript: URLs are dropped.
+    # No toplevel_name entry → items appear directly on the bookmarks toolbar.
+    # ManagedBookmarks is applied on every Firefox startup (unlike Bookmarks which
+    # only applies on first profile creation), so existing profiles stay in sync.
+    toolbarItems = (builtins.head (import ./_bookmarks.nix)).bookmarks;
+    toManagedBookmarks = items:
+      lib.concatMap (
+        item:
+          if item ? bookmarks
+          then
+            let children = toManagedBookmarks item.bookmarks;
+            in if children != [] then [{name = item.name; children = children;}] else []
+          else if (item ? url) && lib.strings.hasPrefix "http" item.url
+          then [{name = item.name; url = item.url;}]
+          else []
+      )
+      items;
   in {
     programs.firefox = {
       enable = true;
@@ -235,6 +231,8 @@
             Status = "locked";
           };
         };
+
+        ManagedBookmarks = toManagedBookmarks toolbarItems;
       };
     };
 
@@ -256,9 +254,6 @@
           user_pref("browser.ml.chat.provider", "https://ai.jamesst.one");
           user_pref("browser.startup.homepage", "http://hermanii:1000");
           user_pref("browser.newtab.url", "http://hermanii:1000");
-          user_pref("browser.bookmarks.file", "${bookmarksHtml}");
-          user_pref("browser.bookmarks.restore_default_bookmarks", false);
-          user_pref("browser.places.importBookmarksHTML", true);
         '';
       };
       xdg.mime-apps.default-applications = {
@@ -275,5 +270,146 @@
     preferences.keymap = {
       "SUPER + d"."f".package = pkgs.firefox;
     };
+  };
+
+  # tests
+
+  perSystem = {
+    pkgs,
+    system,
+    ...
+  }: {
+    checks.firefox = let
+      usr = "firefoxtest";
+      testPkgs = import pkgs.path {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    in
+      testPkgs.testers.runNixOSTest {
+        name = "firefox";
+
+        nodes.machine = {
+          pkgs,
+          lib,
+          ...
+        }: {
+          imports = [
+            self.nixosModules.base
+            self.nixosModules.extra_hjem
+            self.nixosModules.desktop
+          ];
+
+          preferences.user.name = usr;
+          users.users.${usr} = {
+            isNormalUser = true;
+            extraGroups = ["wheel"];
+          };
+
+          # The test VM has no internet access; prevent Firefox from hanging
+          # on force-installed extension downloads from addons.mozilla.org.
+          programs.firefox.policies.ExtensionSettings = lib.mkForce {
+            "*".installation_mode = "blocked";
+          };
+
+          boot.kernelModules = ["virtio_gpu"];
+          virtualisation.memorySize = 2048;
+          virtualisation.qemu.options = ["-vga none -device virtio-gpu-pci"];
+          virtualisation.resolution = {
+            x = 1920;
+            y = 1080;
+          };
+          environment.variables = {
+            LIBGL_ALWAYS_SOFTWARE = "1";
+            MESA_LOADER_DRIVER_OVERRIDE = "kms_swrast";
+          };
+          environment.systemPackages = [pkgs.grim pkgs.imagemagick pkgs.tesseract5];
+        };
+
+        enableOCR = true;
+
+        testScript = ''
+          start_all()
+          machine.wait_for_unit("multi-user.target", timeout=60)
+
+          # Firefox binary is present
+          machine.succeed("command -v firefox")
+
+          # System-level policy file is deployed
+          machine.succeed("test -f /etc/firefox/policies/policies.json")
+
+          # DuckDuckGo is the default search engine
+          machine.succeed(
+            "grep -q 'DuckDuckGo' /etc/firefox/policies/policies.json"
+          )
+
+          # Telemetry is disabled
+          machine.succeed(
+            "grep -q 'DisableTelemetry' /etc/firefox/policies/policies.json"
+          )
+
+          # "Draw" bookmark is in the ManagedBookmarks policy (policy generation sanity check)
+          machine.succeed(
+            "grep -q 'Draw' /etc/firefox/policies/policies.json"
+          )
+
+          # hjem writes the profile ini for the user
+          machine.succeed(
+            "test -f /home/${usr}/.mozilla/firefox/profiles.ini"
+          )
+
+          # hjem writes user.js for the user
+          machine.succeed(
+            "test -f /home/${usr}/.mozilla/firefox/${usr}/user.js"
+          )
+
+          # Wait for niri Wayland session
+          machine.wait_for_file("/run/user/1000/wayland-1", timeout=60)
+          machine.wait_until_succeeds("pgrep -u ${usr} niri", timeout=15)
+
+          # Start Firefox in the niri session
+          machine.succeed(
+            "su - ${usr} -c "
+            "'WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 "
+            "firefox --no-remote about:blank >/tmp/firefox.log 2>&1 &'"
+          )
+
+          # Wait for Firefox process to appear
+          machine.wait_until_succeeds("pgrep -u ${usr} firefox", timeout=30)
+
+          # Give Firefox time to render its window (slow with software rendering)
+          machine.sleep(30)
+
+          # Grab a diagnostic screenshot and print what OCR sees
+          machine.succeed(
+            "su - ${usr} -c "
+            "'WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 "
+            "grim /tmp/debug.png'"
+          )
+          machine.copy_from_vm("/tmp/debug.png", "")
+          print("=== Firefox log ===")
+          print(machine.succeed("cat /tmp/firefox.log 2>/dev/null || echo '(no log)'"))
+          print("=== OCR full screenshot (PSM 3, 3x) ===")
+          print(machine.succeed(
+            "convert /tmp/debug.png -scale 300% /tmp/debug3x.png && "
+            "tesseract /tmp/debug3x.png /tmp/ocr_out --psm 3 --oem 1 2>/dev/null; "
+            "cat /tmp/ocr_out.txt 2>/dev/null || echo '(no output)'"
+          ))
+
+          # OCR: retry until "Draw" appears somewhere on screen.
+          # Scale 3x and use sparse-text mode (PSM 11) on the full image so we
+          # don't have to guess which pixel row the bookmarks toolbar sits on.
+          machine.wait_until_succeeds(
+            "su - ${usr} -c "
+            "'WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 "
+            "grim /tmp/screen.png' && "
+            "convert /tmp/screen.png -scale 300% /tmp/screen3x.png && "
+            "tesseract /tmp/screen3x.png stdout --psm 11 --oem 1 2>/dev/null "
+            "| grep -qi draw",
+            timeout=120,
+          )
+          machine.copy_from_vm("/tmp/screen.png", "")
+        '';
+      };
   };
 }

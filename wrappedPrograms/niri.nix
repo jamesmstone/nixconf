@@ -20,6 +20,8 @@
       in {
         prefer-no-csd = null;
 
+        hotkey-overlay.skip-at-startup = true;
+
         input = {
           focus-follows-mouse = null;
 

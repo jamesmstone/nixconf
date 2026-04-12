@@ -1,0 +1,32 @@
+
+# 2026-04-12 08:42:04.606576
++start_all()
+
+# 2026-04-12 08:43:02.269606
++          machine.succeed("command -v firefox")
+
+# 2026-04-12 08:43:34.645467
++machine.succeed("test -f /etc/firefox/policies/policies.json")
+
+# 2026-04-12 08:44:07.950715
++   machine.succeed(
++            "su - niritest -c "
++            "'WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 "
++            "firefox --no-remote about:blank >/tmp/firefox.log 2>&1 &'"
++          )
+
+# 2026-04-12 08:44:47.767416
++          machine.wait_for_file("/run/user/1000/wayland-1", timeout=60)
+
+# 2026-04-12 08:49:46.737987
++          # Wait for Firefox process to appear
+
+# 2026-04-12 08:50:11.251862
++machine.succeed(
++            "su - firefoxtest -c "
++            "'WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000 "
++            "firefox --no-remote about:blank >/tmp/firefox.log 2>&1 &'"
++          )
+
+# 2026-04-12 08:57:40.365092
++start_all()
