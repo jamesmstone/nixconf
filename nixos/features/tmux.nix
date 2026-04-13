@@ -5,7 +5,7 @@
     ...
   }: {
     environment.systemPackages = [
-      self.packages.${pkgs.stdenv.hostPlatform.system}.tmux-config
+      self.packages.${pkgs.stdenv.hostPlatform.system}.tmux
     ];
   };
 
@@ -35,16 +35,16 @@
           machine.wait_for_unit("multi-user.target")
 
           # tmux binary is present
-          machine.succeed("command -v tmux-config")
+          machine.succeed("command -v tmux")
 
           # Start a tmux session
-          machine.succeed("su - ${usr} -c 'tmux-config new-session -d -s test'")
+          machine.succeed("su - ${usr} -c 'tmux new-session -d -s test'")
 
           # Verify tmux session is running
-          machine.succeed("su - ${usr} -c 'tmux-config has-session -t test'")
+          machine.succeed("su - ${usr} -c 'tmux has-session -t test'")
 
           # Kill tmux session
-          machine.succeed("su - ${usr} -c 'tmux-config kill-session -t test'")
+          machine.succeed("su - ${usr} -c 'tmux kill-session -t test'")
         '';
       };
   };

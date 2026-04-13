@@ -34,8 +34,8 @@
       bind -T copy-mode-vi y send-keys -X copy-selection
     '';
   in {
-    packages.tmux-config = pkgs.writeShellApplication {
-      name = "tmux-config";
+    packages.tmux = pkgs.writeShellApplication {
+      name = "tmux";
       runtimeInputs = [pkgs.tmux];
       text = ''
         exec ${pkgs.tmux}/bin/tmux -f ${tmuxConf} "$@"
