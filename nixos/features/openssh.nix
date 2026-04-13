@@ -1,5 +1,9 @@
 {self, ...}: {
-  flake.nixosModules.openssh = {config, ...}: {
+  flake.nixosModules.openssh = {
+    config,
+    pkgs,
+    ...
+  }: {
     services.openssh = {
       enable = true;
       settings = {
@@ -11,6 +15,8 @@
 
     users.users.${config.preferences.user.name}.openssh.authorizedKeys.keys = config.preferences.user.authorizedKeys;
     users.users.root.openssh.authorizedKeys.keys = config.preferences.user.authorizedKeys;
+
+    environment.systemPackages = [pkgs.mosh];
   };
 
   # tests
