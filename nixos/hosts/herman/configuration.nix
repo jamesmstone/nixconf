@@ -10,8 +10,14 @@
     ];
   };
 
-  flake.nixosModules.hostHerman = {pkgs, ...}: {
+  flake.nixosModules.hostHerman = {
+    lib,
+    pkgs,
+    ...
+  }: {
     imports = [
+      inputs.nixos-hardware.nixosModules.microsoft-surface-common
+
       self.nixosModules.base
       self.nixosModules.general
       self.nixosModules.desktop
@@ -24,7 +30,7 @@
 
     networking.networkmanager.enable = true;
 
-    boot.kernelPackages = pkgs.linuxPackages_latest;
+    boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
 
     system.stateVersion = "25.11";
   };
