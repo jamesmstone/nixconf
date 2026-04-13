@@ -57,6 +57,7 @@
           imports = [
             self.nixosModules.base
             self.nixosModules.extra_hjem
+            self.nixosModules.tmux
           ];
 
           preferences.user.name = usr;
