@@ -16,7 +16,7 @@
     ...
   }: {
     imports = [
-      inputs.nixos-hardware.nixosModules.microsoft-surface-common
+      inputs.nixos-hardware.nixosModules.microsoft-surface-pro-intel
 
       self.nixosModules.base
       self.nixosModules.general
