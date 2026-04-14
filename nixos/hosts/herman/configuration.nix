@@ -30,8 +30,6 @@
 
     networking.networkmanager.enable = true;
 
-    boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
-
     system.stateVersion = "25.11";
   };
 }
