@@ -3,7 +3,7 @@
     pkgs = import inputs.nixpkgs {system = "aarch64-linux";};
     modules = [
       ({pkgs, ...}: {
-#        user.shell = "${pkgs.fish}/bin/fish";
+        user.shell = "${pkgs.fish}/bin/fish";
 
         environment.packages = with pkgs; [
           neovim
