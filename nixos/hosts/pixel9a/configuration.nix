@@ -1,6 +1,6 @@
 {self, inputs, ...}: {
   flake.nixOnDroidConfigurations.pixel9a = inputs.nix-on-droid.lib.nixOnDroidConfiguration {
-    pkgs = import inputs.nixpkgs-unstable-droid {system = "aarch64-linux";};
+    pkgs = import inputs.nixpkgs-droid {system = "aarch64-linux";};
     modules = [
       {
         _module.args.selfpkgs = self.packages.aarch64-linux;
