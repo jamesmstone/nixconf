@@ -34,7 +34,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixpkgs-unstable-droid.url = "github:NixOS/nixpkgs/88d3861";
+    nixpkgs-unstable-droid.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     nix-on-droid = {
       url = "github:nix-community/nix-on-droid/release-24.05";
