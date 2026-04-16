@@ -11,6 +11,9 @@
       wrappersModules = inputs.nixpkgs.lib.mkOption {
         default = {};
       };
+      nixOnDroidModules = inputs.nixpkgs.lib.mkOption {
+        default = {};
+      };
     };
   };
 
