@@ -22,7 +22,7 @@
     imports = [
       self.nixOnDroidModules.android
     ];
-    user.shell = lib.getExe selfpkgs.environment;
+    user.shell = lib.getExe selfpkgs.fish;
 
     environment.packages = with pkgs; [
       selfpkgs.environment
