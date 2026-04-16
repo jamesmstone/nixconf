@@ -2,8 +2,8 @@
   flake.nixOnDroidConfigurations.pixel9a = inputs.nix-on-droid.lib.nixOnDroidConfiguration {
     pkgs = import inputs.nixpkgs {system = "aarch64-linux";};
     modules = [
-      ({pkgs, ...}: {
-        user.shell = "${pkgs.fish}/bin/fish";
+      ({pkgs, lib, ...}: {
+        user.shell = lib.getExe pkgs.fish;
 
         environment.packages = with pkgs; [
           neovim
