@@ -6,7 +6,7 @@
 }: {
   flake.nixOnDroidModules.android = {...}: {
     imports = [
-      self.nixosModules.openssh
+      self.nixOnDroidModules.openssh
     ];
 
     # Stub options to avoid conflicts with NixOS modules

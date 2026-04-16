@@ -37,7 +37,7 @@
     nixpkgs-droid.url = "github:NixOS/nixpkgs/88d3861"; # https://github.com/nix-community/nix-on-droid/issues/495
 
     nix-on-droid = {
-      url = "github:jamesmstone/nix-on-droid"; # https://github.com/nix-community/nix-on-droid/pull/203#issuecomment-2956162178
+      url = "github:jamesmstone/nix-on-droid/supervisord"; # https://github.com/nix-community/nix-on-droid/pull/203#issuecomment-2956162178
       inputs.nixpkgs.follows = "nixpkgs-droid";
     };
   };

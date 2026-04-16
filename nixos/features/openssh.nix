@@ -19,6 +19,19 @@
     environment.systemPackages = [pkgs.mosh];
   };
 
+  flake.nixOnDroidModules.openssh = {
+    config,
+    pkgs,
+    ...
+  }: {
+    services.openssh = {
+      enable = true;
+      hostKeys = [];
+    };
+
+    environment.systemPackages = [pkgs.mosh];
+  };
+
   # tests
   perSystem = {pkgs, ...}: {
     checks.openssh = let
