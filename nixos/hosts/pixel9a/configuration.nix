@@ -10,9 +10,7 @@
         user.shell = lib.getExe pkgs.fish;
 
         environment.packages = with pkgs; [
-          neovim
-          git
-          fish
+          selfpkgs.environment
         ];
 
         nix.extraOptions = ''
