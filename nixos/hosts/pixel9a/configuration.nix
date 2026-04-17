@@ -27,7 +27,7 @@
     # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
       # Fish variant switcher for instant testing
-      pkgs.writeShellApplication {
+      (lib.getExe (pkgs.writeShellApplication {
         name = "fv";
         runtimeInputs = [pkgs.bash];
         text = ''
@@ -39,7 +39,7 @@
             *) exec ${selfpkgs.fish}/bin/fish "$@" ;;
           esac
         '';
-      }
+      }))
     ];
 
     nix.extraOptions = ''
