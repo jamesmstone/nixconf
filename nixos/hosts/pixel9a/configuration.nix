@@ -25,6 +25,11 @@
     # user.shell = lib.getExe selfpkgs.fish;  # TEMP: Comment out for testing
 
     environment.packages = with pkgs; [
+      # Test packages for debugging fish shell
+      selfpkgs.fish-simple
+      selfpkgs.fish-minimal
+      selfpkgs.fish-zoxide
+      selfpkgs.fish-debug
       selfpkgs.environment
     ];
 
