@@ -6,6 +6,7 @@
 }: {
   flake.nixOnDroidModules.android = {...}: {
     imports = [
+      self.nixOnDroidModules.base
       self.nixOnDroidModules.openssh
     ];
 
