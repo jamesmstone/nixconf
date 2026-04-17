@@ -27,7 +27,7 @@
     # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
       # Fish variant switcher for instant testing
-      pkgs.writeShellApplicationBin {
+      pkgs.writeShellApplication {
         name = "fv";
         runtimeInputs = [pkgs.bash];
         text = ''
