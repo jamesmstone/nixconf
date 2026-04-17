@@ -27,9 +27,10 @@
     # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
       # Fish variant switcher for instant testing
-      (lib.getExe (pkgs.writeShellApplication {
+      pkgs.writeShellApplication
+      {
         name = "fv";
-        runtimeInputs = [pkgs.bash];
+        runtimeInputs = [];
         text = ''
           case "$1" in
             simple) exec ${selfpkgs.fish-test-simple}/bin/fish-test-simple "$@" ;;
@@ -39,7 +40,7 @@
             *) exec ${selfpkgs.fish}/bin/fish "$@" ;;
           esac
         '';
-      }))
+      }
     ];
 
     nix.extraOptions = ''
