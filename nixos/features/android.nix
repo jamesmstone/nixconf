@@ -9,6 +9,8 @@
       self.nixOnDroidModules.openssh
     ];
 
+    preferences.user.name = "nix-on-droid";
+
     # Stub options to avoid conflicts with NixOS modules
     # See https://github.com/nix-community/nix-on-droid/issues/469#issuecomment-3178156202
     options.environment.systemPackages = lib.mkOption {
