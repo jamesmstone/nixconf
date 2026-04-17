@@ -29,14 +29,13 @@
       # Fish variant switcher
       pkgs.writeScriptBin "fv" ''
         case "$1" in
-          extra-simple) exec ${lib.getExe pkgs.fish} "$@" ;;
           simple)   exec ${selfpkgs.fish-test-simple}/bin/fish-test-simple "$@" ;;
           minimal)  exec ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal "$@" ;;
           oxide)    exec ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@" ;;
           debug)    exec ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@" ;;
           *)        exec ${selfpkgs.environment}/bin/fish "$@" ;;
         esac
-      ''
+      '';
     ];
 
     nix.extraOptions = ''
