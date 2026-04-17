@@ -46,7 +46,7 @@
           run_with_debug ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@" # DEBUG LOGS:  hangs / freezes
           run_with_debug ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@" # DEBUG LOGS:  hangs / freezes
           run_with_debug ${selfpkgs.fish-test-zero}/bin/fish "$@" # DEBUG LOGS:  NEW - zero runtimeInputs wrapper
-          run_with_debug ${selfpkgs.fish-test-make}/bin/fish-test-make "$@" # DEBUG LOGS:  NEW - makeWrapper
+          run_with_debug ${selfpkgs.fish-test-shell}/bin/fish-test-shell "$@" # DEBUG LOGS:  NEW - shell application
         }
 
         case "$1" in
