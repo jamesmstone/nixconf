@@ -27,15 +27,15 @@
     # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
       # Fish variant switcher
-      (pkgs.writeScriptBin "fv" (lib.concatStrings [
-        "case \"$1\" in\n"
-        "  simple)   exec ${selfpkgs.fish-test-simple}/bin/fish-test-simple \"$@\" ;;\n"
-        "  minimal)  exec ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal \"$@\" ;;\n"
-        "  oxide)    exec ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide \"$@\" ;;\n"
-        "  debug)    exec ${selfpkgs.fish-test-debug}/bin/fish-test-debug \"$@\" ;;\n"
-        "  *)        exec ${selfpkgs.environment}/bin/fish \"$@\" ;;\n"
-        "esac\n"
-      ]))
+      pkgs.writeScriptBin "fv" ''
+        case "$1" in
+          simple)   exec ${selfpkgs.fish-test-simple}/bin/fish-test-simple "$@" ;;
+          minimal)  exec ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal "$@" ;;
+          oxide)    exec ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@" ;;
+          debug)    exec ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@" ;;
+          *)        exec ${selfpkgs.environment}/bin/fish "$@" ;;
+        esac
+      '';
     ];
 
     nix.extraOptions = ''
