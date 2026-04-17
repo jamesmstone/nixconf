@@ -26,7 +26,7 @@
   }: {
     services.openssh = {
       enable = true;
-      hostKeys = [];
+      #hostKeys = [];
     };
 
     environment.systemPackages = [pkgs.mosh];
