@@ -26,11 +26,6 @@
 
     # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
-      selfpkgs.fish-test-simple     # Baseline known working
-      selfpkgs.fish-test-minimal    # Minimal wrapper test
-      selfpkgs.fish-test-zoxide    # Wrapper with single tool
-      selfpkgs.fish-test-debug      # Fish with debug flags
-      selfpkgs.environment           # The full wrapped environment
       # Fish variant switcher for instant testing
       pkgs.writeShellApplicationBin {
         name = "fv";
