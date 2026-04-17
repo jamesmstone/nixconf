@@ -24,13 +24,27 @@
     ];
     # user.shell = lib.getExe selfpkgs.fish;  # TEMP: Comment out for testing
 
-    # All fish test variants (custom named wrappers, no conflicts!)
+    # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
       selfpkgs.fish-test-simple     # Baseline known working
       selfpkgs.fish-test-minimal    # Minimal wrapper test
       selfpkgs.fish-test-zoxide    # Wrapper with single tool
       selfpkgs.fish-test-debug      # Fish with debug flags
-      selfpkgs.environment           # The full wrapped environment (CURRENT)
+      selfpkgs.environment           # The full wrapped environment
+      # Fish variant switcher for instant testing
+      pkgs.writeShellApplicationBin {
+        name = "fv";
+        runtimeInputs = [pkgs.bash];
+        text = ''
+          case "$1" in
+            simple) exec ${selfpkgs.fish-test-simple}/bin/fish-test-simple "$@" ;;
+            minimal) exec ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal "$@" ;;
+            oxide) exec ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@" ;;
+            debug) exec ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@" ;;
+            *) exec ${selfpkgs.fish}/bin/fish "$@" ;;
+          esac
+        '';
+      }
     ];
 
     nix.extraOptions = ''
