@@ -115,9 +115,22 @@
       runtimeInputs = [pkgs.zoxide];
     };
 
-    # Test 4: Fish with debug
+    # Test 4: Fish with debug (writeScriptBin approach)
     packages.fish-test-debug = pkgs.writeScriptBin "fish-test-debug" ''
       exec ${pkgs.fish}/bin/fish --debug-level 3 "$@"
     '';
+
+    # Test 5: Fish with ZERO runtimeInputs using wrapPackage
+    packages.fish-test-zero = inputs.wrappers.lib.wrapPackage {
+      inherit pkgs;
+      package = pkgs.fish;
+      runtimeInputs = [];
+    };
+
+    # Test 6: Fish using writeShellApplication (different wrapper approach)
+    packages.fish-test-shell = pkgs.writeShellApplication {
+      name = "fish-test-shell";
+      runtimeInputs = [pkgs.fish];
+    } "exec ${pkgs.fish}/bin/fish";
   };
 }

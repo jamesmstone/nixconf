@@ -40,11 +40,13 @@
         }
 
         run_all() {
-          run_with_debug ${pkgs.fish}/bin/fish "$@"
-          run_with_debug ${selfpkgs.fish-test-simple}/bin/fish-test-simple "$@"
-          run_with_debug ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal "$@"
-          run_with_debug ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@"
-          run_with_debug ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@"
+          run_with_debug ${pkgs.fish}/bin/fish "$@" # DEBUG LOGS:  works
+          run_with_debug ${selfpkgs.fish-test-simple}/bin/fish-test-simple "$@" # DEBUG LOGS:  hangs / freezes
+          run_with_debug ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal "$@" # DEBUG LOGS:  hangs / freezes
+          run_with_debug ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@" # DEBUG LOGS:  hangs / freezes
+          run_with_debug ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@" # DEBUG LOGS:  hangs / freezes
+          run_with_debug ${selfpkgs.fish-test-zero}/bin/fish "$@" # DEBUG LOGS:  NEW - zero runtimeInputs wrapper
+          run_with_debug ${selfpkgs.fish-test-make}/bin/fish-test-make "$@" # DEBUG LOGS:  NEW - makeWrapper
         }
 
         case "$1" in
@@ -71,6 +73,14 @@
           debug)
             shift
             exec ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@"
+            ;;
+          zero)
+            shift
+            exec ${selfpkgs.fish-test-zero}/bin/fish "$@"
+            ;;
+          shell)
+            shift
+            exec ${selfpkgs.fish-test-shell}/bin/fish-test-shell "$@"
             ;;
           *)
             exec ${selfpkgs.environment}/bin/fish "$@"
