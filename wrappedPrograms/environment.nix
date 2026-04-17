@@ -131,6 +131,7 @@
     packages.fish-test-shell = pkgs.writeShellApplication {
       name = "fish-test-shell";
       runtimeInputs = [pkgs.fish];
-    } "exec ${pkgs.fish}/bin/fish";
+      text = "exec ${pkgs.fish}/bin/fish";
+    };
   };
 }
