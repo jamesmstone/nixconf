@@ -85,5 +85,28 @@
         $EDITOR "$(nix build "$1" --no-link --print-out-paths)/bin"
       '';
     };
+
+    # Fish test packages for debugging Android shell hang
+    # Test 1: Plain fish (baseline known working)
+    packages.fish-simple = pkgs.fish;
+
+    # Test 2: Minimal wrapper
+    packages.fish-minimal = inputs.wrappers.lib.wrapPackage {
+      inherit pkgs;
+      package = pkgs.fish;
+      runtimeInputs = [];
+    };
+
+    # Test 3: Wrapper with zoxide
+    packages.fish-zoxide = inputs.wrappers.lib.wrapPackage {
+      inherit pkgs;
+      package = pkgs.fish;
+      runtimeInputs = [pkgs.zoxide];
+    };
+
+    # Test 4: Fish with debug
+    packages.fish-debug = pkgs.writeScriptBin "fish-debug" ''
+      exec ${pkgs.fish}/bin/fish --debug-level 3 "$@"
+    '';
   };
 }
