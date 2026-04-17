@@ -87,25 +87,36 @@
     };
 
     # Fish test packages for debugging Android shell hang
-    # Test 1: Plain fish (baseline known working)
-    packages.fish-simple = pkgs.fish;
+    # All use custom named wrappers to avoid conflicts in single deployment
 
-    # Test 2: Minimal wrapper
-    packages.fish-minimal = inputs.wrappers.lib.wrapPackage {
+    # Test 1: Plain fish (baseline known working)
+    packages.fish-test-simple = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = pkgs.fish;
+      exePath = "${pkgs.fish}/bin/fish";
+      binName = "fish-test-simple";
+    };
+
+    # Test 2: Minimal wrapper
+    packages.fish-test-minimal = inputs.wrappers.lib.wrapPackage {
+      inherit pkgs;
+      package = pkgs.fish;
+      exePath = "${pkgs.fish}/bin/fish";
+      binName = "fish-test-minimal";
       runtimeInputs = [];
     };
 
     # Test 3: Wrapper with zoxide
-    packages.fish-zoxide = inputs.wrappers.lib.wrapPackage {
+    packages.fish-test-zoxide = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = pkgs.fish;
+      exePath = "${pkgs.fish}/bin/fish";
+      binName = "fish-test-zoxide";
       runtimeInputs = [pkgs.zoxide];
     };
 
     # Test 4: Fish with debug
-    packages.fish-debug = pkgs.writeScriptBin "fish-debug" ''
+    packages.fish-test-debug = pkgs.writeScriptBin "fish-test-debug" ''
       exec ${pkgs.fish}/bin/fish --debug-level 3 "$@"
     '';
   };

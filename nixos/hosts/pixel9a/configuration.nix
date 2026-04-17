@@ -24,13 +24,13 @@
     ];
     # user.shell = lib.getExe selfpkgs.fish;  # TEMP: Comment out for testing
 
+    # All fish test variants (custom named wrappers, no conflicts!)
     environment.packages = with pkgs; [
-      # Test packages for debugging fish shell
-      selfpkgs.fish-simple
-      selfpkgs.fish-minimal
-      selfpkgs.fish-zoxide
-      selfpkgs.fish-debug
-      selfpkgs.environment
+      selfpkgs.fish-test-simple     # Baseline known working
+      selfpkgs.fish-test-minimal    # Minimal wrapper test
+      selfpkgs.fish-test-zoxide    # Wrapper with single tool
+      selfpkgs.fish-test-debug      # Fish with debug flags
+      selfpkgs.environment           # The full wrapped environment (CURRENT)
     ];
 
     nix.extraOptions = ''
