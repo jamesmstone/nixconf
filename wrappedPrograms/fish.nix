@@ -31,15 +31,23 @@
         end
       '';
   in {
+    # Simple wrapper for debugging - no custom config
     packages.fish = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = pkgs.fish;
-      runtimeInputs = [
-        pkgs.zoxide
-      ];
-      flags = {
-        "-C" = "source ${fishConf}";
-      };
+      runtimeInputs = [];
     };
+
+    # Original wrapper (causes freezing)
+    # packages.fish = inputs.wrappers.lib.wrapPackage {
+    #   inherit pkgs;
+    #   package = pkgs.fish;
+    #   runtimeInputs = [
+    #     pkgs.zoxide
+    #   ];
+    #   flags = {
+    #     "-C" = "source ${fishConf}";
+    #   };
+    # };
   };
 }
