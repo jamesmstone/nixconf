@@ -26,17 +26,20 @@
 
     # Deploy with fish-variant switcher for instant testing
     environment.packages = with pkgs; [
-      # Fish variant switcher script (direct string approach)
-      pkgs.writeShellScriptBin "fv" ''
-        #!/usr/bin/env bash
-        case "$1" in
-          simple) exec ${lib.getExe selfpkgs.fish-test-simple} "$@" ;;
-          minimal) exec ${lib.getExe selfpkgs.fish-test-minimal} "$@" ;;
-          oxide) exec ${lib.getExe selfpkgs.fish-test-zoxide} "$@" ;;
-          debug) exec ${lib.getExe selfpkgs.fish-test-debug} "$@" ;;
-          *) exec ${lib.getExe selfpkgs.fish} "$@" ;;
-        esac
-      ''
+      # Fish variant switcher for instant testing
+      pkgs.writeShellApplication {
+        name = "fv";
+        runtimeInputs = [];
+        text = ''
+          case "$1" in
+            simple) exec ${lib.getExe selfpkgs.fish-test-simple} "$@" ;;
+            minimal) exec ${lib.getExe selfpkgs.fish-test-minimal} "$@" ;;
+            oxide) exec ${lib.getExe selfpkgs.fish-test-zoxide} "$@" ;;
+            debug) exec ${lib.getExe selfpkgs.fish-test-debug} "$@" ;;
+            *) exec ${lib.getExe selfpkgs.fish}h "$@" ;;
+          esac
+        '';
+      }
     ];
 
     nix.extraOptions = ''
