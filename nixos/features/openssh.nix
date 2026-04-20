@@ -29,7 +29,7 @@
       #hostKeys = [];
     };
 
-    environment.systemPackages = [pkgs.mosh];
+    environment.packages = [pkgs.mosh];
 
     # Create the key file used by sshd.
     environment.etc."ssh/authorized_keys.d/${config.preferences.user.name}".text =
