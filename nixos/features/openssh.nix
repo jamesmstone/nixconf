@@ -33,7 +33,7 @@
       '';
     };
 
-    environment.packages = [pkgs.mosh];
+    environment.packages = [pkgs.mosh pkgs.openssh];
   };
 
   # tests
