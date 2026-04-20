@@ -26,7 +26,7 @@
   }: {
     services.openssh = {
       enable = true;
-      #hostKeys = [];
+      allowSFTP = false;
     };
 
     environment.packages = [pkgs.mosh];
