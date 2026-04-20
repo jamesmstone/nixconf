@@ -10,7 +10,6 @@
       self.nixOnDroidModules.openssh
     ];
 
-
     config.preferences.user.name = "nix-on-droid";
   };
 }
