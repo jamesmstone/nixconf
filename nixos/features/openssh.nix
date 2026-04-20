@@ -29,7 +29,7 @@
       enable = true;
       allowSFTP = true;
       extraConfig = ''
-        AuthorizedKeysFile ${pkg.writeText "keys" builtins.concatStringsSep "\n" config.preferences.user.authorizedKeys + "\n"}
+        AuthorizedKeysFile ${pkgs.writeText "keys" builtins.concatStringsSep "\n" config.preferences.user.authorizedKeys + "\n"}
       '';
     };
 
