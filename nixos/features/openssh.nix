@@ -22,18 +22,18 @@
   flake.nixOnDroidModules.openssh = {
     config,
     pkgs,
+    lib,
     ...
   }: {
     services.openssh = {
       enable = true;
-      allowSFTP = false;
+      allowSFTP = true;
+      extraConfig = ''
+        AuthorizedKeysFile ${pkg.writeText "keys" builtins.concatStringsSep "\n" config.preferences.user.authorizedKeys + "\n"}
+      '';
     };
 
     environment.packages = [pkgs.mosh];
-
-    # Create the key file used by sshd.
-    environment.etc."ssh/authorized_keys.d/${config.preferences.user.name}".text =
-      builtins.concatStringsSep "\n" config.preferences.user.authorizedKeys + "\n";
   };
 
   # tests
