@@ -29,6 +29,7 @@
       pkgs.busybox
       pkgs.curl
       pkgs.openssh
+      pkgs.dig
       (pkgs.writeScriptBin "fv" ''
         run_with_debug() {
           echo "[DEBUG] Starting: $*"
