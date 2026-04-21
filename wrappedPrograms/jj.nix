@@ -53,7 +53,7 @@
     in {
       options = {
         settings = lib.mkOption {
-          type = tomlFormat.type;
+          inherit (tomlFormat) type;
         };
       };
 

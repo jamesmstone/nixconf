@@ -6,7 +6,7 @@
   }: let
     selfpkgs = self.packages."${pkgs.stdenv.hostPlatform.system}";
     user = config.preferences.user.name;
-    timezone = config.preferences.user.timezone;
+    inherit (config.preferences.user) timezone;
   in {
     imports = [
       self.nixosModules.gtk

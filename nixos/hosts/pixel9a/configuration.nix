@@ -26,6 +26,7 @@
 
     # Deploy with fish-variant switcher for instant testing
     environment.packages = [
+      pkgs.openssh
       (pkgs.writeScriptBin "fv" ''
         run_with_debug() {
           echo "[DEBUG] Starting: $*"
@@ -45,8 +46,8 @@
           run_with_debug ${selfpkgs.fish-test-minimal}/bin/fish-test-minimal "$@" # DEBUG LOGS:  hangs / freezes
           run_with_debug ${selfpkgs.fish-test-zoxide}/bin/fish-test-zoxide "$@" # DEBUG LOGS:  hangs / freezes
           run_with_debug ${selfpkgs.fish-test-debug}/bin/fish-test-debug "$@" # DEBUG LOGS:  hangs / freezes
-          run_with_debug ${selfpkgs.fish-test-zero}/bin/fish "$@" # DEBUG LOGS:  NEW - zero runtimeInputs wrapper
-          run_with_debug ${selfpkgs.fish-test-shell}/bin/fish-test-shell "$@" # DEBUG LOGS:  NEW - shell application
+          run_with_debug ${selfpkgs.fish-test-zero}/bin/fish "$@" # DEBUG LOGS:  hangs / freezes
+          run_with_debug ${selfpkgs.fish-test-shell}/bin/fish-test-shell "$@" # DEBUG LOGS:  hangs / freezes
         }
 
         case "$1" in

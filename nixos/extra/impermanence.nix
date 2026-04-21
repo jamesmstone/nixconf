@@ -22,13 +22,13 @@
         # "/persist/usercache".users = persistentCache;
 
         "/persist/userdata".users."${cfg.user}" = {
-          directories = cfg.data.directories;
-          files = cfg.data.files;
+          inherit (cfg.data) directories;
+          inherit (cfg.data) files;
         };
 
         "/persist/usercache".users."${cfg.user}" = {
-          directories = cfg.cache.directories;
-          files = cfg.cache.files;
+          inherit (cfg.cache) directories;
+          inherit (cfg.cache) files;
         };
 
         "/persist/system" = {

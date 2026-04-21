@@ -23,16 +23,16 @@
             if children != []
             then [
               {
-                name = item.name;
-                children = children;
+                inherit (item) name;
+                inherit children;
               }
             ]
             else []
           else if (item ? url) && lib.strings.hasPrefix "http" item.url
           then [
             {
-              name = item.name;
-              url = item.url;
+              inherit (item) name;
+              inherit (item) url;
             }
           ]
           else []
