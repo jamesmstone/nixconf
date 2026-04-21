@@ -26,6 +26,8 @@
 
     # Deploy with fish-variant switcher for instant testing
     environment.packages = [
+      pkgs.busybox
+      pkgs.curl
       pkgs.openssh
       (pkgs.writeScriptBin "fv" ''
         run_with_debug() {
