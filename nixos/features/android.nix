@@ -16,8 +16,8 @@
       environment.etc."resolv.conf".text = lib.mkForce ''
         # Use Tailscale's local resolver
         nameserver 100.100.100.100
-        # Optional: Add your tailnet search domain so short names work
-        # search your-tailnet-name.ts.net
+        # Add tailnet search domain so short names work
+        search finch-moth.ts.net
         # Fallback to a public DNS
         nameserver 1.1.1.1
         nameserver 8.8.8.8
