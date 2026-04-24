@@ -144,6 +144,12 @@
             installation_mode = "force_installed";
             default_area = "navbar";
           };
+          # LocalCDN
+          "{762f9885-5a13-4abd-9c77-433dcd38b8fd}" = {
+            install_url = "https://addons.mozilla.org/firefox/downloads/latest/localcdn-fork-of-decentraleyes/latest.xpi";
+            installation_mode = "force_installed";
+            default_area = "navbar";
+          };
           # Stylus
           "stylus@stylishaddon.com" = {
             install_url = "https://addons.mozilla.org/firefox/downloads/latest/styl-us/latest.xpi";
