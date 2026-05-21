@@ -249,6 +249,17 @@
             Value = false;
             Status = "locked";
           };
+
+          # Enable Brave's adblock-rust engine (https://itsfoss.com/news/firefox-ships-brave-adblock-engine/)
+          "privacy.trackingprotection.content.protection.enabled" = {
+            Value = true;
+            Status = "locked";
+          };
+          # Use EasyList + EasyPrivacy filter lists with the adblock-rust engine
+          "privacy.trackingprotection.content.protection.test_list_urls" = {
+            Value = "https://easylist.to/easylist/easylist.txt|https://easylist.to/easylist/easyprivacy.txt";
+            Status = "locked";
+          };
         };
 
         ManagedBookmarks = toManagedBookmarks toolbarItems;
