@@ -76,6 +76,8 @@
           pkgs.vimPlugins.fastaction-nvim
           pkgs.vimPlugins.mini-files
           pkgs.vimPlugins.codecompanion-nvim
+          pkgs.vimPlugins.neogit
+          pkgs.vimPlugins.diffview-nvim
         ];
       };
 
