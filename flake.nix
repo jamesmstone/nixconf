@@ -27,6 +27,18 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    # tmux screensaver weather
+    weathr = {
+      url = "github:Veirt/weathr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Matrix TUI popup (matui is our forgejo fork)
+    matui = {
+      url = "git+ssh://forgejo@hermanii/james/matui";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-gaming.url = "github:fufexan/nix-gaming";
 
     sops-nix = {
