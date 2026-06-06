@@ -1,7 +1,6 @@
 # tmux configured as a wrapped package, driven by NixOS options (modelled on
-# nixpkgs programs/tmux.nix). Ported from config-nix-channel's home-manager
-# tmux module, dropping home-manager. All location config resolves at build time
-# from `self.locations` + `preferences.user.city` + the host name.
+# nixpkgs programs/tmux.nix). All location config resolves at build time from
+# `self.locations` + `preferences.user.city` + the host name.
 {
   self,
   inputs,
@@ -164,7 +163,6 @@ in {
       bind s split-window -v -c "#{pane_current_path}"
       bind r run-shell '${pkgs.tmux}/bin/tmux source-file "$TMUX_CONF"' \; display "Config reloaded"
 
-      # Status bar.
       set -g status-bg ${cfg.statusColor}
       set -g status-fg white
       set -g status-interval 5
@@ -241,8 +239,6 @@ in {
       '';
     };
   in {
-    # Declared here (not in base) so the module is self-contained when another
-    # flake imports just nixosModules.tmux. Current city -> self.locations entry.
     options.preferences.user.city = lib.mkOption {
       type = lib.types.str;
       default = "Copenhagen";
@@ -413,7 +409,7 @@ in {
           machine.succeed("command -v tmux")
           machine.succeed("tmux has-session -t t")
 
-          # --- status-right width gating (1/2/3) ---
+          # --- status-right width gating ---
           big = machine.succeed(f"{sr_mel} 120")
           assert "CM:" in big and "CPH:" in big, f"large status-right missing clocks: {big!r}"
           assert "MEL:" not in big, f"current city (Melbourne) must be filtered out: {big!r}"
@@ -427,13 +423,13 @@ in {
           assert "CM:" not in machine.succeed(f"{sr_mel} 99"), "width 99 must be treated as small"
           assert "CM:" in machine.succeed(f"{sr_mel} 100"), "width 100 must be treated as large"
 
-          # --- status-left width gating + $HOME -> ~ (4/5) ---
+          # --- status-left width gating + $HOME -> ~ ---
           left_big = machine.succeed(f"HOME=/home/${usr} {sl_mel} 120 /home/${usr}/proj")
           assert "~/proj" in left_big, f"large status-left must show cwd (~ collapsed): {left_big!r}"
           left_small = machine.succeed(f"HOME=/home/${usr} {sl_mel} 50 /home/${usr}/proj")
           assert left_small.strip() == "", f"small status-left must drop cwd: {left_small!r}"
 
-          # --- options (9/10/11) ---
+          # --- options ---
           assert gopt(machine, "mouse") == "mouse on"
           assert gopt(machine, "history-limit") == "history-limit 10000"
           assert gopt(machine, "status-interval") == "status-interval 5"
@@ -447,7 +443,7 @@ in {
           # per-host status colour: hostname "machine" is unknown -> default
           assert gopt(machine, "status-bg") == "status-bg colour236", gopt(machine, "status-bg")
 
-          # --- keybindings (12/13/14) ---
+          # --- keybindings ---
           prefix = machine.succeed("tmux list-keys -T prefix")
           for marker in ("htop-popup", "matui-popup", "spotify-popup",
                          "tmux-url-picker", "tmux-ai-window-renamer", "james-dictation"):
@@ -464,7 +460,7 @@ in {
           assert "F12" in root, "missing root F12 toggle"
           assert "F12" in machine.succeed("tmux list-keys -T off"), "missing off-table F12 toggle"
 
-          # --- persistence on (15) ---
+          # --- persistence on ---
           assert gopt(machine, "@continuum-restore") == "@continuum-restore on"
           assert gopt(machine, "@continuum-save-interval") == "@continuum-save-interval 15"
           assert gopt(machine, "@resurrect-capture-pane-contents") == "@resurrect-capture-pane-contents on"
