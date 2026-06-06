@@ -241,6 +241,14 @@ in {
       '';
     };
   in {
+    # Declared here (not in base) so the module is self-contained when another
+    # flake imports just nixosModules.tmux. Current city -> self.locations entry.
+    options.preferences.user.city = lib.mkOption {
+      type = lib.types.str;
+      default = "Copenhagen";
+      description = "Current city; indexes self.locations for tmux clocks/weather.";
+    };
+
     options.preferences.tmux = {
       showLoad = lib.mkOption {
         type = lib.types.bool;

@@ -11,11 +11,6 @@ let
         default = "Europe/Copenhagen";
       };
 
-      user.city = lib.mkOption {
-        type = lib.types.str;
-        default = "Copenhagen";
-      };
-
       user.authorizedKeys = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [
