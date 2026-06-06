@@ -19,8 +19,6 @@
     remoteClocks =
       lib.filter (c: c.clock && c.name != city)
       (lib.mapAttrsToList (name: v: v // {inherit name;}) locations);
-    # Below this client width, status-right drops the clocks (load only) and
-    # status-left drops the cwd, to keep a narrow client uncluttered.
     clockMinWidth = 100;
   in {
     left = pkgs.writeShellApplication {
@@ -51,34 +49,28 @@
       '';
     };
   };
-in {
-  flake.nixosModules.tmux = {
+
+  # The wrapped tmux: `tmux -f <generated conf>` with the config assembled from
+  # the given city / colour / toggles. Used by the NixOS module (per host, from
+  # options) and by `packages.tmux` (a runnable default).
+  mkTmux = {
     pkgs,
-    config,
-    lib,
-    ...
+    selfpkgs,
+    city ? "Copenhagen",
+    statusColor ? "colour236",
+    persist ? true,
+    showLoad ? true,
   }: let
-    cfg = config.preferences.tmux;
-    city = config.preferences.user.city;
+    inherit (pkgs) lib;
     locations = self.locations;
-    selfpkgs = self.packages.${pkgs.stdenv.hostPlatform.system};
-
-    hostColors = {
-      darter = "colour22";
-      hermanii = "colour24";
-      herman = "colour88";
-      sgp = "colour94";
-    };
-
     status = mkStatusScripts {inherit pkgs city;};
     statusLeftScript = status.left;
     statusRightScript = status.right;
 
     weathrPkg = inputs.weathr.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-    # Screensaver weather, configured for the current city. weathr reads
-    # $XDG_CONFIG_HOME/weathr/config.toml and has no CLI override, so point it at
-    # a sealed store dir.
+    # weathr reads $XDG_CONFIG_HOME/weathr/config.toml and has no CLI override,
+    # so point it at a sealed store dir.
     weathrConfig = {
       silent = true;
       hide_hud = false;
@@ -135,12 +127,10 @@ in {
       '';
     };
 
-    # Defined here (not inline) because when persistence is on we route it through
-    # tmux-continuum: continuum attaches its periodic auto-save hook to
-    # status-right as it loads, so status-right must be set just before
-    # continuum's run-shell or auto-save silently breaks.
+    # status-right must be set just before continuum's run-shell, so continuum
+    # can attach its auto-save hook to it (else auto-save silently breaks).
     loadStatusRight =
-      lib.optionalString cfg.showLoad
+      lib.optionalString showLoad
       "set -g status-right '#[default] #(${lib.getExe statusRightScript} #{client_width})'";
 
     tmuxConf = pkgs.writeText "tmux.conf" ''
@@ -163,15 +153,15 @@ in {
       bind s split-window -v -c "#{pane_current_path}"
       bind r run-shell '${pkgs.tmux}/bin/tmux source-file "$TMUX_CONF"' \; display "Config reloaded"
 
-      set -g status-bg ${cfg.statusColor}
+      set -g status-bg ${statusColor}
       set -g status-fg white
       set -g status-interval 5
       set -g status-right-length 60
       set -g status-left-length 60
       set -g status-left '#[default]#(${lib.getExe statusLeftScript} #{client_width} "#{pane_current_path}")[#S] '
-      ${lib.optionalString (!cfg.persist) loadStatusRight}
+      ${lib.optionalString (!persist) loadStatusRight}
 
-      ${lib.optionalString cfg.persist ''
+      ${lib.optionalString persist ''
         # resurrect must load before continuum (continuum drives resurrect's
         # save/restore), so status-right must be set just before continuum's
         # run-shell or auto-save silently breaks.
@@ -179,8 +169,6 @@ in {
         set -g @resurrect-strategy-nvim 'session'
         run-shell ${pkgs.tmuxPlugins.resurrect}/share/tmux-plugins/resurrect/resurrect.tmux
 
-        # Set status-right here, right before continuum's run-shell, so continuum
-        # can attach its auto-save hook to it.
         set -g @continuum-restore 'on'
         set -g @continuum-save-interval '15'
         ${loadStatusRight}
@@ -194,8 +182,7 @@ in {
         'split-window -h -c "#{pane_current_path}"' \
         'split-window -v -c "#{pane_current_path}"'
 
-      # Toggle htop in a popup. The popup runs a nested session so the same key
-      # closes it: inside the popup, prefix+h detaches; outside, it opens.
+      # The popup runs a nested session so the same key closes it from inside.
       bind-key h if-shell -F '#{==:#{session_name},htop-popup}' \
         'detach-client' \
         'display-popup -E -w 90% -h 90% "${lib.getExe pkgs.tmux} new-session -A -s htop-popup ${lib.getExe pkgs.htop}"'
@@ -210,12 +197,12 @@ in {
 
       bind-key u display-popup -E -w 80% -h 70% "${lib.getExe urlPicker}"
 
-      # Toggle dictation. M-d so the default detach-client binding survives.
+      # M-d so the default detach-client binding survives.
       bind-key M-d run-shell "${lib.getExe selfpkgs.james-dictation}"
 
       bind-key a run-shell -b "${lib.getExe selfpkgs.tmux-ai-window-renamer}"
 
-      # Toggle keybindings/prefix on/off with F12 for nested tmux sessions.
+      # F12 toggles the prefix off so a nested tmux gets the keys.
       bind -T root F12 \
         set prefix None \;\
         set key-table off \;\
@@ -229,14 +216,28 @@ in {
         set -u status-style \;\
         refresh-client -S
     '';
-
-    wrappedTmux = pkgs.writeShellApplication {
+  in
+    pkgs.writeShellApplication {
       name = "tmux";
       runtimeInputs = [pkgs.tmux];
       text = ''
         export TMUX_CONF=${tmuxConf}
         exec ${pkgs.tmux}/bin/tmux -f "$TMUX_CONF" "$@"
       '';
+    };
+in {
+  flake.nixosModules.tmux = {
+    pkgs,
+    config,
+    lib,
+    ...
+  }: let
+    cfg = config.preferences.tmux;
+    hostColors = {
+      darter = "colour22";
+      hermanii = "colour24";
+      herman = "colour88";
+      sgp = "colour94";
     };
   in {
     options.preferences.user.city = lib.mkOption {
@@ -264,15 +265,29 @@ in {
     };
 
     config = {
-      environment.systemPackages = [wrappedTmux];
+      environment.systemPackages = [
+        (mkTmux {
+          inherit pkgs;
+          selfpkgs = self.packages.${pkgs.stdenv.hostPlatform.system};
+          city = config.preferences.user.city;
+          inherit (cfg) statusColor persist showLoad;
+        })
+      ];
     };
   };
 
   perSystem = {
     pkgs,
+    self',
     lib,
     ...
   }: {
+    # Runnable default: `nix run <repo>#tmux` drops you into the configured tmux.
+    packages.tmux = mkTmux {
+      inherit pkgs;
+      selfpkgs = self'.packages;
+    };
+
     checks.tmux = let
       usr = "tmuxtest";
 
