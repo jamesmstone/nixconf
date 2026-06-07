@@ -23,13 +23,16 @@
       self.nixOnDroidModules.android
     ];
 
-    # user.uid/gid default to $(id -u)/$(id -g) run *in the build sandbox*. That's
-    # correct when building on-device (the real Android app uid, 10369 here) but
-    # wrong when building off-device (the sandbox's 1000/100). A mismatched uid in
-    # /etc/passwd means the running uid has no passwd entry — getpwuid fails and
-    # sshd/login/builds break. Pin this device's real ids so off-device builds work.
-    user.uid = 10369;
-    user.gid = 10369;
+    # user.uid/gid default to $(id -u)/$(id -g) run *in the build sandbox*, which
+    # is correct on-device but wrong off-device (the sandbox's 1000/100). A
+    # mismatched uid in /etc/passwd means the running uid has no passwd entry —
+    # getpwuid fails and sshd/login/builds break. Since this is built off-device
+    # (on darter), take the device's real ids from the environment: deploy.nix
+    # queries the phone over SSH and exports PIXEL9A_UID/GID before building, so it
+    # stays correct even though Android reassigns the app uid on reinstall. The
+    # fallback is this device's current value, for a plain `nix build`.
+    user.uid = let v = builtins.getEnv "PIXEL9A_UID"; in if v != "" then lib.toInt v else 10410;
+    user.gid = let v = builtins.getEnv "PIXEL9A_GID"; in if v != "" then lib.toInt v else 10410;
 
     # user.shell = lib.getExe selfpkgs.fish;  # TEMP: Comment out for testing
 

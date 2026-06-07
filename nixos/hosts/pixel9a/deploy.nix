@@ -23,8 +23,21 @@
         port="''${PORT:-8022}"
         attr="$flake#nixOnDroidConfigurations.pixel9a.activationPackage"
 
+        # Query the phone's real Android app uid/gid so the closure's /etc/passwd
+        # matches the device (the uid is reassigned on app reinstall). configuration.nix
+        # reads these via builtins.getEnv.
+        if idline=$(ssh -p "$port" "$host" 'id -u; id -g' 2>/dev/null); then
+          PIXEL9A_UID="$(echo "$idline" | sed -n 1p)"
+          PIXEL9A_GID="$(echo "$idline" | sed -n 2p)"
+          export PIXEL9A_UID PIXEL9A_GID
+          echo ">> phone uid:gid = $PIXEL9A_UID:$PIXEL9A_GID"
+        else
+          echo ">> WARN: could not query phone uid; using configuration.nix fallback"
+        fi
+
         echo ">> building $attr (aarch64, via emulation)"
-        # --impure: nix-on-droid references store paths via builtins.storePath.
+        # --impure: nix-on-droid references store paths via builtins.storePath, and
+        # configuration.nix reads PIXEL9A_UID/GID via getEnv.
         # --accept-flake-config: trust the nix-on-droid cachix substituter in nixConfig.
         nix build "$attr" --impure --accept-flake-config --out-link /tmp/pixel9a-activate
         out="$(readlink -f /tmp/pixel9a-activate)"

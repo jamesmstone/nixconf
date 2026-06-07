@@ -31,11 +31,11 @@
       self.nixOnDroidModules.android
     ];
 
-    # Match the device's real Android app uid so /etc/passwd is correct (see the
-    # note in configuration.nix). When built on-device this is auto-detected, but
-    # pinning keeps it correct if ever built off-device too.
-    user.uid = 10369;
-    user.gid = 10369;
+    # Deliberately do NOT pin user.uid/gid here: the bootstrap is always built
+    # on-device, so nix-on-droid's default ($(id -u)/$(id -g) in the build) yields
+    # the device's real Android app uid automatically — and survives the uid being
+    # reassigned on app reinstall. (The full config in configuration.nix is built
+    # off-device, so it has to pin; see the note there.)
 
     nix.extraOptions = ''
       experimental-features = nix-command flakes
