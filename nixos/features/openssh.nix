@@ -29,6 +29,11 @@
       enable = true;
       allowSFTP = true;
       extraConfig = ''
+        # AuthorizedKeysFile lives in /nix/store, which on nix-on-droid is owned
+        # by the Android app uid (≠ the sshd user's passwd uid). sshd's StrictModes
+        # check rejects that ("bad ownership or modes"), so every key is refused.
+        # The store is immutable and world-readable, so the check guards nothing here.
+        StrictModes no
         AuthorizedKeysFile ${pkgs.writeText "keys" (builtins.concatStringsSep "\n" config.preferences.user.authorizedKeys + "\n")}
       '';
     };
