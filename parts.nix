@@ -14,6 +14,9 @@
       nixOnDroidModules = inputs.nixpkgs.lib.mkOption {
         default = {};
       };
+      nixOnDroidConfigurations = inputs.nixpkgs.lib.mkOption {
+        default = {};
+      };
     };
   };
 

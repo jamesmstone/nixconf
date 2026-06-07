@@ -24,7 +24,9 @@
         attr="$flake#nixOnDroidConfigurations.pixel9a.activationPackage"
 
         echo ">> building $attr (aarch64, via emulation)"
-        nix build "$attr" --out-link /tmp/pixel9a-activate
+        # --impure: nix-on-droid references store paths via builtins.storePath.
+        # --accept-flake-config: trust the nix-on-droid cachix substituter in nixConfig.
+        nix build "$attr" --impure --accept-flake-config --out-link /tmp/pixel9a-activate
         out="$(readlink -f /tmp/pixel9a-activate)"
 
         echo ">> copying closure to $host (port $port)"
