@@ -1,4 +1,12 @@
 {
+  # Extra cache for nix-on-droid's prebuilt cross-compiled artifacts (e.g. the
+  # proot-termux-static binary), which is referenced by fixed store path and not
+  # on cache.nixos.org. Needed to build .#nixOnDroidConfigurations.pixel9a off-device.
+  nixConfig = {
+    extra-substituters = ["https://nix-on-droid.cachix.org"];
+    extra-trusted-public-keys = ["nix-on-droid.cachix.org-1:56snoMJTXmDRC1Ei24CmKoUqvHJ9XCp+nidK7qkMQrU="];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
