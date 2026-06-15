@@ -43,6 +43,7 @@
       pkgs.openssh
       pkgs.dig
       selfpkgs.git
+      selfpkgs.claude-code
       (pkgs.writeScriptBin "fv" ''
         run_with_debug() {
           echo "[DEBUG] Starting: $*"
