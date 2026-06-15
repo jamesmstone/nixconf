@@ -133,11 +133,29 @@
       lib.optionalString showLoad
       "set -g status-right '#[default] #(${lib.getExe statusRightScript} #{client_width})'";
 
+    # tmux-time-tracker: on every pane focus / selection change, record
+    # (utc epoch, program, cwd, nearest git dir) to a SQLite DB.
+    timeTrackerPlugin = pkgs.writeShellScript "tmux-time-tracker.tmux" ''
+      ${lib.concatMapStringsSep "\n" (hook: ''
+          ${lib.getExe pkgs.tmux} set-hook -ga ${hook} "run-shell -b ${lib.getExe selfpkgs.tmux-time-tracker}"
+        '') [
+        "pane-focus-in"
+        "after-select-pane"
+        "after-select-window"
+        "session-window-changed"
+        "client-session-changed"
+        "client-attached"
+      ]}
+    '';
+
     tmuxConf = pkgs.writeText "tmux.conf" ''
       set -g default-terminal "screen-256color"
       setw -g clock-mode-style 24
       set -g history-limit 10000
       set -g mouse on
+      set -g focus-events on
+
+      run-shell ${timeTrackerPlugin}
 
       set -g base-index 1
       setw -g pane-base-index 1
@@ -273,6 +291,8 @@ in {
           inherit (cfg) statusColor persist showLoad;
         })
       ];
+
+      persistance.data.directories = [".local/share/tmux-time-tracker"];
     };
   };
 
@@ -468,6 +488,15 @@ in {
 
           vicopy = machine.succeed("tmux list-keys -T copy-mode-vi")
           assert "begin-selection" in vicopy and "copy-selection" in vicopy
+
+          # --- tmux-time-tracker plugin hooks ---
+          assert gopt(machine, "focus-events") == "focus-events on"
+          hooks = machine.succeed("tmux show-hooks -g")
+          tracker = "${lib.getExe self'.packages.tmux-time-tracker}"
+          for hook in ("pane-focus-in", "after-select-pane", "after-select-window",
+                       "session-window-changed", "client-session-changed", "client-attached"):
+              assert hook in hooks, f"missing hook {hook}"
+          assert hooks.count(tracker) == 6, f"tmux-time-tracker not wired into all hooks: {hooks!r}"
 
           root = machine.succeed("tmux list-keys -T root")
           for k in ("M-Left", "M-Right", "M-Up", "M-Down"):
