@@ -32,7 +32,7 @@
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
         config.allowUnfreePredicate = pkg:
-          builtins.elem (inputs.nixpkgs.lib.getName pkg) ["replace"];
+          builtins.elem (inputs.nixpkgs.lib.getName pkg) ["replace" "claude-code"];
       };
     };
   };
