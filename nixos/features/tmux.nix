@@ -137,7 +137,7 @@
     # (utc epoch, program, cwd, nearest git dir) to a SQLite DB.
     timeTrackerPlugin = pkgs.writeShellScript "tmux-time-tracker.tmux" ''
       ${lib.concatMapStringsSep "\n" (hook: ''
-          ${lib.getExe pkgs.tmux} set-hook -ga ${hook} "run-shell -b ${lib.getExe selfpkgs.tmux-time-tracker}"
+          ${lib.getExe pkgs.tmux} set-hook -ga ${hook} "run-shell -b '${lib.getExe selfpkgs.tmux-time-tracker} record'"
         '') [
         "pane-focus-in"
         "after-select-pane"
@@ -397,7 +397,7 @@ in {
           city = "Melbourne";
           persist = true;
           showLoad = true;
-          extraPkgs = [renderStatus pkgs.util-linux statusMel.left statusMel.right];
+          extraPkgs = [renderStatus pkgs.util-linux statusMel.left statusMel.right self'.packages.tmux-time-tracker];
         };
         nodes.cph = mkNode {
           city = "Copenhagen";
@@ -497,6 +497,29 @@ in {
                        "session-window-changed", "client-session-changed", "client-attached"):
               assert hook in hooks, f"missing hook {hook}"
           assert hooks.count(tracker) == 6, f"tmux-time-tracker not wired into all hooks: {hooks!r}"
+
+          # --- tmux-time-tracker record/report end-to-end ---
+          db_path = "/tmp/activity.db"
+          proj_a = "/tmp/proj-a"
+          proj_b = "/tmp/proj-b"
+          machine.succeed(f"mkdir -p {proj_a}/.git {proj_b}/.git")
+          pane = machine.succeed("tmux list-panes -t t -F '#{pane_id}'").strip().splitlines()[0]
+
+          machine.succeed(f"tmux send-keys -t {pane} 'cd {proj_a}' Enter")
+          machine.wait_until_succeeds(
+              f"tmux display-message -p -t {pane} -F '#{{pane_current_path}}' | grep -qFx {proj_a}"
+          )
+          machine.succeed(f"TMUX_PANE={pane} TMUX_TIME_TRACKER_DB={db_path} tmux-time-tracker record")
+
+          machine.succeed(f"tmux send-keys -t {pane} 'cd {proj_b}' Enter")
+          machine.wait_until_succeeds(
+              f"tmux display-message -p -t {pane} -F '#{{pane_current_path}}' | grep -qFx {proj_b}"
+          )
+          machine.succeed(f"TMUX_PANE={pane} TMUX_TIME_TRACKER_DB={db_path} tmux-time-tracker record")
+
+          report = machine.succeed(f"TMUX_TIME_TRACKER_DB={db_path} tmux-time-tracker report")
+          assert proj_a in report and proj_b in report, f"report missing projects: {report!r}"
+          assert re.search(r"\d+[hms]", report), f"report missing duration: {report!r}"
 
           root = machine.succeed("tmux list-keys -T root")
           for k in ("M-Left", "M-Right", "M-Up", "M-Down"):
