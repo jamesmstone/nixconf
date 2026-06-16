@@ -146,6 +146,17 @@
       set -g history-limit 10000
       set -g mouse on
 
+      # Flag a window in the status bar when one of its panes rings the bell.
+      # opencode rings it (via its tmux-bell plugin) when a session finishes and
+      # is awaiting input. `bell-action other` only flags windows you're NOT
+      # currently in, and tmux clears the flag automatically when you visit the
+      # window; `visual-bell off` keeps it to the persistent status-bar flag
+      # rather than a screen flash.
+      setw -g monitor-bell on
+      set -g bell-action other
+      set -g visual-bell off
+      setw -g window-status-bell-style 'fg=colour220,bold'
+
       set -g base-index 1
       setw -g pane-base-index 1
       set -g renumber-windows on
@@ -477,6 +488,12 @@ in {
           assert gopt(machine, "history-limit") == "history-limit 10000"
           assert gopt(machine, "status-interval") == "status-interval 5"
           assert gopt(machine, "lock-after-time") == "lock-after-time 300"
+          # bell-based "window awaiting input" flag (opencode rings it on idle)
+          assert gwopt(machine, "monitor-bell") == "monitor-bell on"
+          assert gopt(machine, "bell-action") == "bell-action other"
+          assert gopt(machine, "visual-bell") == "visual-bell off"
+          assert "colour220" in gwopt(machine, "window-status-bell-style"), \
+              gwopt(machine, "window-status-bell-style")
           assert "screen-256color" in gopt(machine, "default-terminal")
           assert gopt(machine, "base-index") == "base-index 1"
           assert gopt(machine, "renumber-windows") == "renumber-windows on"
