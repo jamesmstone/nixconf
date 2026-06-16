@@ -44,6 +44,7 @@
       pkgs.dig
       selfpkgs.git
       selfpkgs.claude-code
+      selfpkgs.tmux-droid # wrapped tmux on nix-on-droid's ncurses-6.5 tmux (proot attach)
       (pkgs.writeScriptBin "fv" ''
         run_with_debug() {
           echo "[DEBUG] Starting: $*"

@@ -34,6 +34,13 @@
         '';
       in "$(${ensure} >/dev/null 2>&1; true)";
 
+      # The Nix-on-Droid app launches the proot login with TERM unset or "dumb",
+      # so ncurses apps refuse to run (tmux: "open terminal failed: not a
+      # terminal"). Default to a real terminal type, but preserve a usable TERM
+      # that was already provided (e.g. forwarded over an interactive SSH login).
+      environment.sessionVariables.TERM =
+        ''$(if [ "''${TERM:-dumb}" = dumb ]; then echo xterm-256color; else echo "''${TERM}"; fi)'';
+
       environment.etc."resolv.conf".text = lib.mkForce ''
         # Use Tailscale's local resolver
         nameserver 100.100.100.100

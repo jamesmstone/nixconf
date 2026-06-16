@@ -60,6 +60,13 @@
     statusColor ? "colour236",
     persist ? true,
     showLoad ? true,
+    # The tmux binary the wrapper execs (and the popups' nested sessions use).
+    # Defaults to nixpkgs' tmux. Overridable because nixos-unstable's tmux links
+    # ncurses 6.6, whose setupterm() regressed to reject the PTY devices that
+    # nix-on-droid's proot hands a client over SCM_RIGHTS — so attaching dies
+    # with "open terminal failed: not a terminal". The pixel9a build passes a
+    # tmux linked against an older ncurses (6.5) to dodge that regression.
+    tmuxPkg ? pkgs.tmux,
   }: let
     inherit (pkgs) lib;
     locations = self.locations;
@@ -104,7 +111,7 @@
 
     urlPicker = pkgs.writeShellApplication {
       name = "tmux-url-picker";
-      runtimeInputs = [pkgs.tmux pkgs.gnugrep pkgs.coreutils pkgs.fzf selfpkgs.open];
+      runtimeInputs = [tmuxPkg pkgs.gnugrep pkgs.coreutils pkgs.fzf selfpkgs.open];
       text = ''
         url="$(tmux capture-pane -J -p -S - -E - \
           | grep -oP '(https?://[^\s<>"'"'"']+)' \
@@ -151,7 +158,7 @@
       bind -n M-Down select-pane -D
       bind v split-window -h -c "#{pane_current_path}"
       bind s split-window -v -c "#{pane_current_path}"
-      bind r run-shell '${pkgs.tmux}/bin/tmux source-file "$TMUX_CONF"' \; display "Config reloaded"
+      bind r run-shell '${tmuxPkg}/bin/tmux source-file "$TMUX_CONF"' \; display "Config reloaded"
 
       set -g status-bg ${statusColor}
       set -g status-fg white
@@ -185,15 +192,15 @@
       # The popup runs a nested session so the same key closes it from inside.
       bind-key h if-shell -F '#{==:#{session_name},htop-popup}' \
         'detach-client' \
-        'display-popup -E -w 90% -h 90% "${lib.getExe pkgs.tmux} new-session -A -s htop-popup ${lib.getExe pkgs.htop}"'
+        'display-popup -E -w 90% -h 90% "${lib.getExe tmuxPkg} new-session -A -s htop-popup ${lib.getExe pkgs.htop}"'
 
       bind-key C-c if-shell -F '#{==:#{session_name},matui-popup}' \
         'detach-client' \
-        'display-popup -E -w 90% -h 90% "${lib.getExe pkgs.tmux} new-session -A -s matui-popup ${lib.getExe selfpkgs.matui-configured}"'
+        'display-popup -E -w 90% -h 90% "${lib.getExe tmuxPkg} new-session -A -s matui-popup ${lib.getExe selfpkgs.matui-configured}"'
 
       bind-key C-a if-shell -F '#{==:#{session_name},spotify-popup}' \
         'detach-client' \
-        'display-popup -E -w 90% -h 90% "${lib.getExe pkgs.tmux} new-session -A -s spotify-popup ${lib.getExe pkgs.spotify-player}"'
+        'display-popup -E -w 90% -h 90% "${lib.getExe tmuxPkg} new-session -A -s spotify-popup ${lib.getExe pkgs.spotify-player}"'
 
       bind-key u display-popup -E -w 80% -h 70% "${lib.getExe urlPicker}"
 
@@ -219,10 +226,18 @@
   in
     pkgs.writeShellApplication {
       name = "tmux";
-      runtimeInputs = [pkgs.tmux];
+      runtimeInputs = [tmuxPkg];
       text = ''
+        # Nix-on-Droid's app login hands the shell TERM unset or "dumb", which
+        # makes tmux refuse to start ("open terminal failed: not a terminal").
+        # Coerce a usable terminal type here, in the same process that execs
+        # tmux, so it can't be clobbered by login/shell ordering. No-op on a
+        # normal terminal, where TERM is already a real type.
+        if [ -z "''${TERM:-}" ] || [ "''${TERM:-}" = dumb ]; then
+          export TERM=xterm-256color
+        fi
         export TMUX_CONF=${tmuxConf}
-        exec ${pkgs.tmux}/bin/tmux -f "$TMUX_CONF" "$@"
+        exec ${tmuxPkg}/bin/tmux -f "$TMUX_CONF" "$@"
       '';
     };
 in {
@@ -280,12 +295,25 @@ in {
     pkgs,
     self',
     lib,
+    system,
     ...
-  }: {
+  }: let
+    # nix-on-droid pins its own nixpkgs; its tmux links ncurses 6.5, which (unlike
+    # nixos-unstable's 6.6) accepts the proot PTYs the phone hands tmux on attach.
+    pkgsDroid = import inputs.nixpkgs-droid {inherit system;};
+  in {
     # Runnable default: `nix run <repo>#tmux` drops you into the configured tmux.
     packages.tmux = mkTmux {
       inherit pkgs;
       selfpkgs = self'.packages;
+    };
+
+    # Same wrapped tmux, but built around nix-on-droid's ncurses-6.5 tmux so it
+    # can actually attach under proot. Used by the pixel9a host.
+    packages.tmux-droid = mkTmux {
+      inherit pkgs;
+      selfpkgs = self'.packages;
+      tmuxPkg = pkgsDroid.tmux;
     };
 
     checks.tmux = let
