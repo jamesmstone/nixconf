@@ -145,6 +145,7 @@
       setw -g clock-mode-style 24
       set -g history-limit 10000
       set -g mouse on
+      set -g focus-events on
 
       # Flag a window in the status bar when one of its panes rings the bell.
       # opencode rings it (via its tmux-bell plugin) when a session finishes and
@@ -485,6 +486,7 @@ in {
 
           # --- options ---
           assert gopt(machine, "mouse") == "mouse on"
+          assert gopt(machine, "focus-events") == "focus-events on"
           assert gopt(machine, "history-limit") == "history-limit 10000"
           assert gopt(machine, "status-interval") == "status-interval 5"
           assert gopt(machine, "lock-after-time") == "lock-after-time 300"
