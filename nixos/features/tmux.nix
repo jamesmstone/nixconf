@@ -140,11 +140,29 @@
       lib.optionalString showLoad
       "set -g status-right '#[default] #(${lib.getExe statusRightScript} #{client_width})'";
 
+    # tmux-time-tracker: on every pane focus / selection change, record
+    # (utc epoch, program, cwd, nearest git dir) to a SQLite DB.
+    timeTrackerPlugin = pkgs.writeShellScript "tmux-time-tracker.tmux" ''
+      ${lib.concatMapStringsSep "\n" (hook: ''
+          ${lib.getExe pkgs.tmux} set-hook -ga ${hook} "run-shell -b '${lib.getExe selfpkgs.tmux-time-tracker} record'"
+        '') [
+        "pane-focus-in"
+        "after-select-pane"
+        "after-select-window"
+        "session-window-changed"
+        "client-session-changed"
+        "client-attached"
+      ]}
+    '';
+
     tmuxConf = pkgs.writeText "tmux.conf" ''
       set -g default-terminal "screen-256color"
       setw -g clock-mode-style 24
       set -g history-limit 10000
       set -g mouse on
+      set -g focus-events on
+
+      run-shell ${timeTrackerPlugin}
 
       # Flag a window in the status bar when one of its panes rings the bell.
       # opencode rings it (via its tmux-bell plugin) when a session finishes and
@@ -299,6 +317,8 @@ in {
           inherit (cfg) statusColor persist showLoad;
         })
       ];
+
+      persistance.data.directories = [".local/share/tmux-time-tracker"];
     };
   };
 
@@ -416,7 +436,7 @@ in {
           city = "Melbourne";
           persist = true;
           showLoad = true;
-          extraPkgs = [renderStatus pkgs.util-linux statusMel.left statusMel.right];
+          extraPkgs = [renderStatus pkgs.util-linux statusMel.left statusMel.right self'.packages.tmux-time-tracker];
         };
         nodes.cph = mkNode {
           city = "Copenhagen";
@@ -513,6 +533,38 @@ in {
 
           vicopy = machine.succeed("tmux list-keys -T copy-mode-vi")
           assert "begin-selection" in vicopy and "copy-selection" in vicopy
+
+          # --- tmux-time-tracker plugin hooks ---
+          assert gopt(machine, "focus-events") == "focus-events on"
+          hooks = machine.succeed("tmux show-hooks -g")
+          tracker = "${lib.getExe self'.packages.tmux-time-tracker}"
+          for hook in ("pane-focus-in", "after-select-pane", "after-select-window",
+                       "session-window-changed", "client-session-changed", "client-attached"):
+              assert hook in hooks, f"missing hook {hook}"
+          assert hooks.count(tracker) == 6, f"tmux-time-tracker not wired into all hooks: {hooks!r}"
+
+          # --- tmux-time-tracker record/report end-to-end ---
+          db_path = "/tmp/activity.db"
+          proj_a = "/tmp/proj-a"
+          proj_b = "/tmp/proj-b"
+          machine.succeed(f"mkdir -p {proj_a}/.git {proj_b}/.git")
+          pane = machine.succeed("tmux list-panes -t t -F '#{pane_id}'").strip().splitlines()[0]
+
+          machine.succeed(f"tmux send-keys -t {pane} 'cd {proj_a}' Enter")
+          machine.wait_until_succeeds(
+              f"tmux display-message -p -t {pane} -F '#{{pane_current_path}}' | grep -qFx {proj_a}"
+          )
+          machine.succeed(f"TMUX_PANE={pane} TMUX_TIME_TRACKER_DB={db_path} tmux-time-tracker record")
+
+          machine.succeed(f"tmux send-keys -t {pane} 'cd {proj_b}' Enter")
+          machine.wait_until_succeeds(
+              f"tmux display-message -p -t {pane} -F '#{{pane_current_path}}' | grep -qFx {proj_b}"
+          )
+          machine.succeed(f"TMUX_PANE={pane} TMUX_TIME_TRACKER_DB={db_path} tmux-time-tracker record")
+
+          report = machine.succeed(f"TMUX_TIME_TRACKER_DB={db_path} tmux-time-tracker report")
+          assert proj_a in report and proj_b in report, f"report missing projects: {report!r}"
+          assert re.search(r"\d+[hms]", report), f"report missing duration: {report!r}"
 
           root = machine.succeed("tmux list-keys -T root")
           for k in ("M-Left", "M-Right", "M-Up", "M-Down"):
